@@ -153,6 +153,19 @@
     border-radius: 20px;
   }
 
+  .badge-category {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
   .card-body { padding: 16px; }
   .card-body h3 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
   .card-body .meta { font-size: 12px; color: var(--slate); margin: 0 0 12px; }
@@ -401,6 +414,14 @@
     </svg>`;
   }
 
+  function genericItemIconSVG() {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 8L12 3 3 8l9 5 9-5z"/>
+      <path d="M3 8v8l9 5 9-5V8"/>
+      <path d="M12 13v8"/>
+    </svg>`;
+  }
+
   function renderItems() {
     const grid = document.getElementById('auction-grid');
     const emptyState = document.getElementById('empty-state');
@@ -420,6 +441,11 @@
       const ended = remaining === null;
       const ending = !ended && isEndingSoon(item.endsAt);
       const minNextBid = (item.currentBid || item.reservePrice) + 5000;
+      const isVehicle = item.itemType === "Vehicle";
+      const itemTitle = item.displayTitle || item.regNo;
+      const metaLine = isVehicle
+        ? [item.makeModel, item.year, item.location].filter(Boolean).join(' · ')
+        : [item.itemType, item.location].filter(Boolean).join(' · ');
 
       return `
         <div class="card" data-id="${item.id}">
@@ -428,12 +454,13 @@
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
               <span class="timer-text">${remaining}</span>
             </div>`}
-            <div class="badge-reserve">Reserve ${formatKES(item.reservePrice)}</div>
-            ${carIconSVG()}
+            ${item.reservePrice ? `<div class="badge-reserve">Reserve ${formatKES(item.reservePrice)}</div>` : ''}
+            <div class="badge-category">${item.itemType || 'Vehicle'}</div>
+            ${isVehicle ? carIconSVG() : genericItemIconSVG()}
           </div>
           <div class="card-body">
-            <h3>${item.regNo}</h3>
-            <p class="meta">${item.makeModel} &middot; ${item.year} &middot; ${item.location}</p>
+            <h3>${itemTitle}</h3>
+            <p class="meta">${metaLine}</p>
             <div class="bid-row">
               <div>
                 <div class="label">${item.currentBid ? "Current bid" : "Starting price"}</div>
@@ -495,16 +522,33 @@
 
   // Maps raw SharePoint list fields onto the shape this page expects.
   function normalizeItem(raw) {
+    // Choice fields from SharePoint come as {Value: "..."} objects
+    const itemType = (typeof raw.Item_Type === 'object' ? raw.Item_Type?.Value : raw.Item_Type) ?? raw.itemType ?? "Vehicle";
+    const status = (typeof raw.Status === 'object' ? raw.Status?.Value : raw.Status) ?? "";
+    const isVehicle = itemType === "Vehicle";
+
+    // Description field: try both capitalisations SharePoint might return
+    const description = raw.Description ?? raw.description ?? raw.OData__Description ?? "";
+
+    // For vehicles, build a display name from make/model; for others, use description or title
+    const displayTitle = isVehicle
+      ? (raw.Title ?? raw.regNo ?? "")
+      : (description || raw.Title || "");
+
     return {
       id: raw.ID ?? raw.id,
-      regNo: raw.Title ?? raw.regNo,
-      makeModel: raw.Make_Model ?? raw.makeModel,
-      year: raw.Year_of_Manufacture ?? raw.year,
-      location: raw.Vehicle_Location ?? raw.location,
-      reservePrice: raw.Reserve_Price ?? raw.reservePrice,
-      currentBid: raw.Current_Bid ?? raw.currentBid ?? null,
+      itemType: itemType,
+      status: status,
+      regNo: raw.Title ?? raw.regNo ?? "",
+      displayTitle: displayTitle,
+      makeModel: raw.Make_Model ?? raw.makeModel ?? "",
+      year: raw.Year_of_Manufacture ?? raw.year ?? null,
+      description: description,
+      location: raw.Vehicle_Location ?? raw.location ?? "",
+      reservePrice: Number(raw.Reserve_Price ?? raw.reservePrice ?? 0) || 0,
+      currentBid: raw.Current_Bid ? Number(raw.Current_Bid) : (raw.currentBid ? Number(raw.currentBid) : null),
       bidderName: raw.Current_Bidder_Name ?? raw.bidderName ?? null,
-      endsAt: raw.Auction_End_Time ?? raw.endsAt,
+      endsAt: raw.Auction_End_Time ?? raw.endsAt ?? null,
     };
   }
 
