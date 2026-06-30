@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOIL Salvage Auction</title>
+<style>
+  :root {
+    --navy: #19286D;
+    --navy-dark: #101A4A;
+    --red: #D81E26;
+    --red-dark: #A8151B;
+    --ink: #1C1F2A;
+    --slate: #6B7280;
+    --line: #E5E7EB;
+    --bg: #F7F7F9;
+    --card: #FFFFFF;
+    --gold: #B98A2E;
+    --gold-bg: #FBF3E2;
+    --green: #1D9E75;
+    --green-bg: #E7F6F0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .topbar {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar .crest {
+    width: 34px; height: 34px;
+    border-radius: 6px;
+    background: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .topbar h1 { font-size: 15px; margin: 0; font-weight: 600; letter-spacing: 0.2px; }
+  .topbar p { font-size: 11px; margin: 0; color: #B6BFE8; }
+  .topbar .status {
+    font-size: 11px;
+    background: rgba(255,255,255,0.1);
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; }
+
+  .hero {
+    background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+    color: #fff;
+    padding: 28px 20px 36px;
+    text-align: center;
+  }
+  .hero .eyebrow {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #94A3D8;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .hero h2 { font-size: 24px; margin: 0 0 6px; font-weight: 600; }
+  .hero p.sub { font-size: 13px; color: #B6BFE8; margin: 0; max-width: 480px; margin-inline: auto; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 0 16px 60px; }
+
+  .terms-bar {
+    background: var(--gold-bg);
+    border: 1px solid #EBD7AB;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: -18px;
+    font-size: 12.5px;
+    color: #6B5316;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .terms-bar svg { flex-shrink: 0; margin-top: 1px; }
+
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label .count {
+    background: var(--navy);
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover { box-shadow: 0 4px 16px rgba(25,40,109,0.08); transform: translateY(-1px); }
+
+  .card-photo {
+    height: 150px;
+    background: #DDE2EE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .card-photo svg { width: 56px; height: 56px; color: #9AA4C4; }
+  .badge-timer {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(16,26,74,0.85);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .badge-timer.ending { background: var(--red); }
+  .badge-reserve {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(255,255,255,0.92);
+    color: var(--navy);
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .card-body { padding: 16px; }
+  .card-body h3 { margin: 0 0 2px; font-size: 16px; font-weight: 600; }
+  .card-body .meta { font-size: 12px; color: var(--slate); margin: 0 0 12px; }
+
+  .bid-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .bid-row .label { font-size: 11px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.4px; }
+  .bid-row .amount { font-size: 20px; font-weight: 700; color: var(--navy); }
+  .bid-row .amount.no-bids { color: var(--slate); font-weight: 500; font-size: 14px; }
+  .bidder-tag {
+    font-size: 11px;
+    color: var(--green);
+    background: var(--green-bg);
+    padding: 2px 9px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  .bid-form { display: flex; gap: 8px; }
+  .bid-form input[type="number"] {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+    font-family: inherit;
+  }
+  .bid-form input[type="number"]:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(25,40,109,0.1);
+  }
+  .bid-form button {
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .bid-form button:hover { background: var(--red-dark); }
+  .bid-form button:active { transform: scale(0.97); }
+  .bid-form button:disabled { background: #C4C7D4; cursor: not-allowed; }
+
+  .ended-tag {
+    background: #F1F2F5;
+    color: var(--slate);
+    font-size: 12px;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .feedback {
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.success { background: var(--green-bg); color: #0F6E56; }
+  .feedback.error { background: #FCEBEB; color: #A32D2D; }
+
+  .register-cta {
+    margin-top: 36px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    text-align: center;
+  }
+  .register-cta h4 { margin: 0 0 6px; font-size: 15px; color: var(--navy); }
+  .register-cta p { margin: 0 0 16px; font-size: 12.5px; color: var(--slate); }
+  .register-cta a {
+    display: inline-block;
+    background: var(--navy);
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px 24px;
+    border-radius: 8px;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--slate);
+    padding: 24px 16px 40px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--slate);
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="crest">KO</div>
+      <div>
+        <h1>Kenya Orient Insurance</h1>
+        <p>Motor Vehicle Salvage Auction</p>
+      </div>
+    </div>
+    <div class="status"><span class="dot"></span> Live auction</div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">Public salvage auction</div>
+    <h2>Bid on recovered vehicles</h2>
+    <p class="sub">Browse current salvage stock, place your bid before the timer runs out, and collect your vehicle once payment is confirmed.</p>
+  </div>
+
+  <div class="container">
+
+    <div class="terms-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <span>A KES 50,000 bidding deposit per vehicle is required before bidding is confirmed. Highest bid when the timer reaches zero wins. Full payment due within 7 days. Vehicles sold as-is, where-is.</span>
+    </div>
+
+    <div class="section-label">Vehicles up for auction <span class="count" id="item-count">0</span></div>
+
+    <div class="grid" id="auction-grid"></div>
+    <div class="empty-state" id="empty-state" style="display:none;">No vehicles currently listed for auction. Check back soon.</div>
+
+    <div class="register-cta">
+      <h4>Not registered to bid yet?</h4>
+      <p>You'll need to register and confirm your KES 50,000 bidding deposit before your bid is accepted.</p>
+      <a href="#" id="register-link">Register as a bidder</a>
+    </div>
+
+  </div>
+
+  <footer>
+    Kenya Orient Insurance Limited &middot; Capitol Hill Towers, Cathedral Road, Nairobi &middot; 020 2728603/4<br>
+    Regulated by the Insurance Regulatory Authority of Kenya
+  </footer>
+
+<script>
+  // ============================================================
+  // CONFIGURATION — replace these two URLs once your Power Automate
+  // HTTP-triggered flows are published. Until then, the page runs
+  // on the SAMPLE_ITEMS placeholder data below so you can preview
+  // the full bidding experience.
+  // ============================================================
+  const GET_ITEMS_API_URL = "https://defaultef8faf736b3a4164ad9e5f340bcf09.f8.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3400b527c7bb4636a8bb3da837a98ee9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MUs0J0mM4b76ytcVlMAjg_R0C5mbnWAXDsosD8ev8fA";
+  const PLACE_BID_API_URL = "https://defaultef8faf736b3a4164ad9e5f340bcf09.f8.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/56cf627d93a14877b61780fa9e555923/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=CVy6jj90DFPb0dn2-VuIyAU44C-eAiTwgpGYg_yfUHA";
+  const REFRESH_INTERVAL_MS = 8000;
+
+  const SAMPLE_ITEMS = [
+    {
+      id: "KAB123X",
+      regNo: "KAB 123X",
+      makeModel: "Toyota Fielder 1500cc",
+      year: 2016,
+      location: "Nairobi Yard",
+      reservePrice: 280000,
+      currentBid: 310000,
+      bidderName: "J. Mwangi",
+      endsAt: new Date(Date.now() + 1000 * 60 * 42).toISOString(),
+    },
+    {
+      id: "KCD456Y",
+      regNo: "KCD 456Y",
+      makeModel: "Subaru Forester 2000cc",
+      year: 2014,
+      location: "Mombasa Yard",
+      reservePrice: 420000,
+      currentBid: null,
+      bidderName: null,
+      endsAt: new Date(Date.now() + 1000 * 60 * 8).toISOString(),
+    },
+    {
+      id: "KBN789Z",
+      regNo: "KBN 789Z",
+      makeModel: "Isuzu D-Max Pickup",
+      year: 2018,
+      location: "Kisumu Yard",
+      reservePrice: 650000,
+      currentBid: 700000,
+      bidderName: "A. Otieno",
+      endsAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    },
+  ];
+
+  let items = [];
+  let countdownTimer = null;
+
+  function formatKES(n) {
+    if (n === null || n === undefined) return null;
+    return "KES " + Number(n).toLocaleString("en-KE");
+  }
+
+  function timeRemaining(endsAt) {
+    const diff = new Date(endsAt).getTime() - Date.now();
+    if (diff <= 0) return null;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    if (h > 0) return `${h}h ${m}m left`;
+    if (m > 0) return `${m}m ${s}s left`;
+    return `${s}s left`;
+  }
+
+  function isEndingSoon(endsAt) {
+    const diff = new Date(endsAt).getTime() - Date.now();
+    return diff > 0 && diff < 1000 * 60 * 10;
+  }
+
+  function carIconSVG() {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13"/>
+      <rect x="3" y="13" width="18" height="5" rx="1.5"/>
+      <circle cx="7.5" cy="18.5" r="1.5"/>
+      <circle cx="16.5" cy="18.5" r="1.5"/>
+    </svg>`;
+  }
+
+  function renderItems() {
+    const grid = document.getElementById('auction-grid');
+    const emptyState = document.getElementById('empty-state');
+    const countEl = document.getElementById('item-count');
+
+    if (!items.length) {
+      grid.innerHTML = "";
+      emptyState.style.display = "block";
+      countEl.textContent = "0";
+      return;
+    }
+    emptyState.style.display = "none";
+    countEl.textContent = items.length;
+
+    grid.innerHTML = items.map(item => {
+      const remaining = timeRemaining(item.endsAt);
+      const ended = remaining === null;
+      const ending = !ended && isEndingSoon(item.endsAt);
+      const minNextBid = (item.currentBid || item.reservePrice) + 5000;
+
+      return `
+        <div class="card" data-id="${item.id}">
+          <div class="card-photo">
+            ${ended ? '' : `<div class="badge-timer ${ending ? 'ending' : ''}" data-ends="${item.endsAt}">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              <span class="timer-text">${remaining}</span>
+            </div>`}
+            <div class="badge-reserve">Reserve ${formatKES(item.reservePrice)}</div>
+            ${carIconSVG()}
+          </div>
+          <div class="card-body">
+            <h3>${item.regNo}</h3>
+            <p class="meta">${item.makeModel} &middot; ${item.year} &middot; ${item.location}</p>
+            <div class="bid-row">
+              <div>
+                <div class="label">${item.currentBid ? "Current bid" : "Starting price"}</div>
+                <div class="amount ${item.currentBid ? '' : 'no-bids'}">${item.currentBid ? formatKES(item.currentBid) : formatKES(item.reservePrice) + " (no bids yet)"}</div>
+                ${item.bidderName ? `<div class="bidder-tag">Leading: ${item.bidderName}</div>` : ''}
+              </div>
+            </div>
+            ${ended
+              ? `<div class="ended-tag">Auction ended ${item.bidderName ? '&mdash; sold to ' + item.bidderName : '&mdash; no winning bid'}</div>`
+              : `<form class="bid-form" onsubmit="return placeBid(event, '${item.id}')">
+                  <input type="number" name="bidAmount" placeholder="Min KES ${minNextBid.toLocaleString()}" min="${minNextBid}" step="1000" required>
+                  <button type="submit">Place bid</button>
+                </form>
+                <div class="feedback" id="feedback-${item.id}"></div>`
+            }
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function tickTimers() {
+    document.querySelectorAll('.badge-timer').forEach(el => {
+      const endsAt = el.getAttribute('data-ends');
+      const remaining = timeRemaining(endsAt);
+      if (remaining === null) {
+        fetchItems();
+      } else {
+        el.querySelector('.timer-text').textContent = remaining;
+        if (isEndingSoon(endsAt)) el.classList.add('ending');
+      }
+    });
+  }
+
+  async function fetchItems() {
+    if (!GET_ITEMS_API_URL) {
+      items = SAMPLE_ITEMS;
+      renderItems();
+      return;
+    }
+    try {
+      const res = await fetch(GET_ITEMS_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      const raw = data.items || data.value || [];
+      items = raw.map(normalizeItem);
+      renderItems();
+    } catch (err) {
+      console.error("Failed to fetch items", err);
+    }
+  }
+
+  // Maps raw SharePoint list fields onto the shape this page expects.
+  function normalizeItem(raw) {
+    return {
+      id: raw.ID ?? raw.id,
+      regNo: raw.Title ?? raw.regNo,
+      makeModel: raw.Make_Model ?? raw.makeModel,
+      year: raw.Year_of_Manufacture ?? raw.year,
+      location: raw.Vehicle_Location ?? raw.location,
+      reservePrice: raw.Reserve_Price ?? raw.reservePrice,
+      currentBid: raw.Current_Bid ?? raw.currentBid ?? null,
+      bidderName: raw.Current_Bidder_Name ?? raw.bidderName ?? null,
+      endsAt: raw.Auction_End_Time ?? raw.endsAt,
+    };
+  }
+
+  async function placeBid(event, itemId) {
+    event.preventDefault();
+    const form = event.target;
+    const amountInput = form.querySelector('input[name="bidAmount"]');
+    const amount = Number(amountInput.value);
+    const button = form.querySelector('button');
+    const feedbackEl = document.getElementById('feedback-' + itemId);
+
+    button.disabled = true;
+    button.textContent = "Placing...";
+
+    if (!PLACE_BID_API_URL) {
+      // Demo mode — simulate locally
+      setTimeout(() => {
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+          item.currentBid = amount;
+          item.bidderName = "You (demo)";
+        }
+        renderItems();
+        showFeedback(itemId, "success", "Bid placed (demo mode — connect the API to go live).");
+      }, 500);
+      return false;
+    }
+
+    try {
+      const res = await fetch(PLACE_BID_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId, bidAmount: amount }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showFeedback(itemId, "success", "Your bid was placed successfully.");
+        await fetchItems();
+      } else {
+        showFeedback(itemId, "error", data.message || "Your bid could not be placed. It may be below the minimum.");
+        button.disabled = false;
+        button.textContent = "Place bid";
+      }
+    } catch (err) {
+      showFeedback(itemId, "error", "Something went wrong. Please try again.");
+      button.disabled = false;
+      button.textContent = "Place bid";
+    }
+    return false;
+  }
+
+  function showFeedback(itemId, type, message) {
+    const el = document.getElementById('feedback-' + itemId);
+    if (!el) return;
+    el.textContent = message;
+    el.className = "feedback show " + type;
+  }
+
+  fetchItems();
+  setInterval(fetchItems, REFRESH_INTERVAL_MS);
+  setInterval(tickTimers, 1000);
+</script>
+
+</body>
+</html>
