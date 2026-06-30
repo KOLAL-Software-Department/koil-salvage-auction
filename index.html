@@ -176,7 +176,21 @@
     margin-top: 4px;
   }
 
-  .bid-form { display: flex; gap: 8px; }
+  .bid-form { display: flex; flex-direction: column; gap: 8px; }
+  .bid-form .bidder-input {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    width: 100%;
+    font-family: inherit;
+  }
+  .bid-form .bidder-input:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(25,40,109,0.1);
+  }
+  .bid-amount-row { display: flex; gap: 8px; }
   .bid-form input[type="number"] {
     flex: 1;
     border: 1px solid var(--line);
@@ -429,9 +443,13 @@
             </div>
             ${ended
               ? `<div class="ended-tag">Auction ended ${item.bidderName ? '&mdash; sold to ' + item.bidderName : '&mdash; no winning bid'}</div>`
-              : `<form class="bid-form" onsubmit="return placeBid(event, '${item.id}')">
-                  <input type="number" name="bidAmount" placeholder="Min KES ${minNextBid.toLocaleString()}" min="${minNextBid}" step="1000" required>
-                  <button type="submit">Place bid</button>
+              : `<form class="bid-form bid-form-full" onsubmit="return placeBid(event, '${item.id}')">
+                  <input type="text" name="bidderName" placeholder="Your full name" required class="bidder-input">
+                  <input type="tel" name="bidderPhone" placeholder="Your phone number" required class="bidder-input">
+                  <div class="bid-amount-row">
+                    <input type="number" name="bidAmount" placeholder="Min KES ${minNextBid.toLocaleString()}" min="${minNextBid}" step="1000" required>
+                    <button type="submit">Place bid</button>
+                  </div>
                 </form>
                 <div class="feedback" id="feedback-${item.id}"></div>`
             }
@@ -494,7 +512,11 @@
     event.preventDefault();
     const form = event.target;
     const amountInput = form.querySelector('input[name="bidAmount"]');
+    const nameInput = form.querySelector('input[name="bidderName"]');
+    const phoneInput = form.querySelector('input[name="bidderPhone"]');
     const amount = Number(amountInput.value);
+    const bidderName = nameInput.value.trim();
+    const bidderPhone = phoneInput.value.trim();
     const button = form.querySelector('button');
     const feedbackEl = document.getElementById('feedback-' + itemId);
 
@@ -507,7 +529,7 @@
         const item = items.find(i => i.id === itemId);
         if (item) {
           item.currentBid = amount;
-          item.bidderName = "You (demo)";
+          item.bidderName = bidderName || "You (demo)";
         }
         renderItems();
         showFeedback(itemId, "success", "Bid placed (demo mode — connect the API to go live).");
@@ -519,7 +541,7 @@
       const res = await fetch(PLACE_BID_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId, bidAmount: amount }),
+        body: JSON.stringify({ itemId, bidAmount: amount, bidderName, bidderPhone }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
