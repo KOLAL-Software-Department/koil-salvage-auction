@@ -297,12 +297,11 @@
           <h3>${item.displayTitle}</h3>
           <p class="meta">${metaLine}</p>
           <div style="margin-bottom:12px;">
-            <div class="label">${item.currentBid ? "Current bid" : "No bids yet"}</div>
-            <div class="amount${item.currentBid ? '' : ' no-bids'}">${item.currentBid ? formatKES(item.currentBid) : "Be the first to bid"}</div>
-            ${item.bidderName ? `<div class="bidder-tag">Leading: ${item.bidderName}</div>` : ''}
+            <div class="label">Status</div>
+            <div class="amount no-bids">${item.currentBid ? "Bids received" : "No bids yet — be the first"}</div>
           </div>
           ${ended
-            ? `<div class="ended-tag">Auction ended${item.bidderName ? ' — sold to ' + item.bidderName : ' — no winning bid'}</div>`
+            ? `<div class="ended-tag">Auction closed</div>`
             : inBasket
               ? `<div class="add-basket-row">
                   <span style="font-size:13px;color:var(--green);font-weight:600;">Bid: ${formatKES(basket[item.id].bidAmount)}</span>
