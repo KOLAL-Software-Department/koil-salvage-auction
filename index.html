@@ -454,7 +454,6 @@
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
               <span class="timer-text">${remaining}</span>
             </div>`}
-            ${item.reservePrice ? `<div class="badge-reserve">Reserve ${formatKES(item.reservePrice)}</div>` : ''}
             <div class="badge-category">${item.itemType || 'Vehicle'}</div>
             ${isVehicle ? carIconSVG() : genericItemIconSVG()}
           </div>
@@ -463,8 +462,8 @@
             <p class="meta">${metaLine}</p>
             <div class="bid-row">
               <div>
-                <div class="label">${item.currentBid ? "Current bid" : "Starting price"}</div>
-                <div class="amount ${item.currentBid ? '' : 'no-bids'}">${item.currentBid ? formatKES(item.currentBid) : formatKES(item.reservePrice) + " (no bids yet)"}</div>
+                <div class="label">${item.currentBid ? "Current bid" : "No bids yet"}</div>
+                <div class="amount ${item.currentBid ? '' : 'no-bids'}">${item.currentBid ? formatKES(item.currentBid) : "Be the first to bid"}</div>
                 ${item.bidderName ? `<div class="bidder-tag">Leading: ${item.bidderName}</div>` : ''}
               </div>
             </div>
@@ -474,7 +473,7 @@
                   <input type="text" name="bidderName" placeholder="Your full name" required class="bidder-input">
                   <input type="tel" name="bidderPhone" placeholder="Your phone number" required class="bidder-input">
                   <div class="bid-amount-row">
-                    <input type="number" name="bidAmount" placeholder="Min KES ${minNextBid.toLocaleString()}" min="${minNextBid}" step="1000" required>
+                    <input type="number" name="bidAmount" placeholder="Enter your bid (KES)" min="${minNextBid}" step="1000" required>
                     <button type="submit">Place bid</button>
                   </div>
                 </form>
