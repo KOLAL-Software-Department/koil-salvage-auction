@@ -155,6 +155,7 @@
   <div class="basket-deposit-note" id="basket-deposit-note" style="display:none;"></div>
   <div class="basket-form" id="basket-form" style="display:none;">
     <input type="text" id="bidder-name" placeholder="Your full name" required>
+    <input type="text" id="bidder-id" placeholder="Your National ID / Passport number" required>
     <input type="tel" id="bidder-phone" placeholder="Your phone number" required>
     <button class="basket-submit" id="basket-submit-btn" onclick="submitBasket()">Submit All Bids</button>
     <div class="basket-feedback" id="basket-feedback"></div>
@@ -416,12 +417,13 @@
   // ── Submit basket ───────────────────────────────────────────────
   async function submitBasket() {
     const name = document.getElementById('bidder-name').value.trim();
+    const bidderId = document.getElementById('bidder-id').value.trim();
     const phone = document.getElementById('bidder-phone').value.trim();
     const feedbackEl = document.getElementById('basket-feedback');
     const submitBtn = document.getElementById('basket-submit-btn');
 
-    if (!name || !phone) {
-      feedbackEl.textContent = 'Please enter your full name and phone number.';
+    if (!name || !bidderId || !phone) {
+      feedbackEl.textContent = 'Please fill in your full name, ID number, and phone number.';
       feedbackEl.className = 'basket-feedback show error';
       return;
     }
@@ -443,7 +445,8 @@
             itemId: String(item.id),
             bidAmount,
             bidderName: name,
-            bidderPhone: phone
+            bidderPhone: phone,
+            bidderID: bidderId
           })
         });
         const data = await res.json();
