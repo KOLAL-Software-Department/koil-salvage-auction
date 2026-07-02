@@ -213,20 +213,8 @@
     const isVehicle = itemType === "Vehicle";
     const description = raw.Description ?? raw.description ?? "";
     const displayTitle = isVehicle ? (raw.Title ?? "") : (description || raw.Title || "");
-    // SharePoint Image fields return JSON string: {"serverUrl":"...","serverRelativeUrl":"..."}
-    let imageUrl = null;
-    if (raw.Item_Image) {
-      try {
-        const img = typeof raw.Item_Image === 'string' ? JSON.parse(raw.Item_Image) : raw.Item_Image;
-        if (img.serverUrl && img.serverRelativeUrl) {
-          imageUrl = img.serverUrl + img.serverRelativeUrl;
-        } else if (img.Url || img.url) {
-          imageUrl = img.Url || img.url;
-        }
-      } catch(e) {
-        imageUrl = typeof raw.Item_Image === 'string' && raw.Item_Image.startsWith('http') ? raw.Item_Image : null;
-      }
-    }
+    // Image URL — plain text column containing a public SharePoint sharing link
+    const imageUrl = raw.Image_URL ?? raw.imageUrl ?? null;
     return {
       id: raw.ID ?? raw.id,
       itemType,
